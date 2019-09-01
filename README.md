@@ -1,4 +1,4 @@
-# poseidon-rs
+# poseidon-rs [![Build Status](https://travis-ci.org/arnaucube/poseidon-rs.svg?branch=master)](https://travis-ci.org/arnaucube/poseidon-rs)
 Poseidon hash implementation in Rust
 
 https://eprint.iacr.org/2019/458.pdf
