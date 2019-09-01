@@ -203,6 +203,46 @@ impl Poseidon {
 
         Ok(state[0].clone())
     }
+
+    pub fn hash(&self, inp: Vec<BigInt>) -> Result<BigInt, String> {
+        // check if arr elements are inside the finite field over R
+        if !check_bigint_array_in_field(&inp, &self.constants.r) {
+            return Err("elements not inside the finite field over R".to_string());
+        }
+        let mut r: BigInt = Zero::zero();
+        for i in (0..inp.len()).step_by(5) {
+            let mut five_elems: Vec<BigInt> = Vec::new();
+            for j in 0..5 {
+                if i + j < inp.len() {
+                    five_elems.push(inp[i + j].clone());
+                } else {
+                    five_elems.push(Zero::zero());
+                }
+            }
+            let ph = &self.poseidon_hash(five_elems);
+            match ph {
+                Result::Err(err) => return Err(err.to_string()),
+                Result::Ok(res) => {
+                    r = modulus(&(r + res), &self.constants.r);
+                }
+            }
+        }
+        Ok(r)
+    }
+
+    pub fn hash_bytes(&self, b: Vec<u8>) -> Result<BigInt, String> {
+        let n = 31;
+        let mut ints: Vec<BigInt> = Vec::new();
+        for i in 0..b.len() / n {
+            let v: BigInt = BigInt::from_bytes_le(Sign::Plus, &b[n * i..n * (i + 1)]);
+            ints.push(v);
+        }
+        if b.len() % n != 0 {
+            let v: BigInt = BigInt::from_bytes_le(Sign::Plus, &b[(b.len() / n) * n..]);
+            ints.push(v);
+        }
+        self.hash(ints)
+    }
 }
 
 #[cfg(test)]
@@ -244,6 +284,24 @@ mod tests {
         assert_eq!(
             h34.to_string(),
             "17185195740979599334254027721507328033796809509313949281114643312710535000993"
+        );
+    }
+
+    #[test]
+    fn test_hash_bytes() {
+        let msg = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+        let poseidon = Poseidon::new();
+        let h = poseidon.hash_bytes(msg.as_bytes().to_vec()).unwrap();
+        assert_eq!(
+            h.to_string(),
+            "11821124228916291136371255062457365369197326845706357273715164664419275913793"
+        );
+
+        let msg2 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet.";
+        let h2 = poseidon.hash_bytes(msg2.as_bytes().to_vec()).unwrap();
+        assert_eq!(
+            h2.to_string(),
+            "10747013384255785702102976082726575658403084163954725275481577373644732938016"
         );
     }
 }
