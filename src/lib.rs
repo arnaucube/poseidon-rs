@@ -209,17 +209,24 @@ impl Poseidon {
         if !check_bigint_array_in_field(&inp, &self.constants.r) {
             return Err("elements not inside the finite field over R".to_string());
         }
-        let mut r: BigInt = Zero::zero();
-        for i in (0..inp.len()).step_by(5) {
-            let mut five_elems: Vec<BigInt> = Vec::new();
-            for j in 0..5 {
+        let mut r: BigInt = One::one();
+        for i in (0..inp.len()).step_by(T - 1) {
+            let mut to_hash: Vec<BigInt> = Vec::new();
+            let mut p = 0;
+            for j in 0..T - 1 {
+                p = j.clone();
                 if i + j < inp.len() {
-                    five_elems.push(inp[i + j].clone());
+                    to_hash.push(inp[i + j].clone());
                 } else {
-                    five_elems.push(Zero::zero());
+                    p = j.clone();
+                    break;
                 }
             }
-            let ph = &self.poseidon_hash(five_elems);
+            to_hash.push(r.clone());
+            for _ in p + 1..T - 1 {
+                to_hash.push(Zero::zero());
+            }
+            let ph = &self.poseidon_hash(to_hash);
             match ph {
                 Result::Err(err) => return Err(err.to_string()),
                 Result::Ok(res) => {
@@ -269,10 +276,15 @@ mod tests {
         big_arr.push(b1.clone());
         big_arr.push(b2.clone());
         let poseidon = Poseidon::new();
-        let h = poseidon.poseidon_hash(big_arr).unwrap();
+        let h = poseidon.poseidon_hash(big_arr.clone()).unwrap();
         assert_eq!(
             h.to_string(),
             "12242166908188651009877250812424843524687801523336557272219921456462821518061"
+        );
+        let h = poseidon.hash(big_arr).unwrap();
+        assert_eq!(
+            h.to_string(),
+            "4932297968297298434239270129193057052722409868268166443802652458940273154855"
         );
 
         let b3: BigInt = BigInt::parse_bytes(b"3", 10).unwrap();
@@ -280,10 +292,15 @@ mod tests {
         let mut big_arr34: Vec<BigInt> = Vec::new();
         big_arr34.push(b3.clone());
         big_arr34.push(b4.clone());
-        let h34 = poseidon.poseidon_hash(big_arr34).unwrap();
+        let h34 = poseidon.poseidon_hash(big_arr34.clone()).unwrap();
         assert_eq!(
             h34.to_string(),
             "17185195740979599334254027721507328033796809509313949281114643312710535000993"
+        );
+        let h34 = poseidon.hash(big_arr34).unwrap();
+        assert_eq!(
+            h34.to_string(),
+            "4635491972858758537477743930622086396911540895966845494943021655521913507504"
         );
     }
 
@@ -294,14 +311,72 @@ mod tests {
         let h = poseidon.hash_bytes(msg.as_bytes().to_vec()).unwrap();
         assert_eq!(
             h.to_string(),
-            "11821124228916291136371255062457365369197326845706357273715164664419275913793"
+            "16019700159595764790637132363672701294192939959594423814006267756172551741065"
         );
 
         let msg2 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet.";
         let h2 = poseidon.hash_bytes(msg2.as_bytes().to_vec()).unwrap();
         assert_eq!(
             h2.to_string(),
-            "10747013384255785702102976082726575658403084163954725275481577373644732938016"
+            "2978613163687734485261639854325792381691890647104372645321246092227111432722"
         );
+    }
+
+    #[test]
+    fn test_chunks() {
+        let b0: BigInt = BigInt::parse_bytes(b"0", 10).unwrap();
+        let b1: BigInt = BigInt::parse_bytes(b"1", 10).unwrap();
+        let b2: BigInt = BigInt::parse_bytes(b"2", 10).unwrap();
+        let b3: BigInt = BigInt::parse_bytes(b"3", 10).unwrap();
+        let b4: BigInt = BigInt::parse_bytes(b"4", 10).unwrap();
+        let b5: BigInt = BigInt::parse_bytes(b"5", 10).unwrap();
+        let b6: BigInt = BigInt::parse_bytes(b"6", 10).unwrap();
+        let b7: BigInt = BigInt::parse_bytes(b"7", 10).unwrap();
+        let b8: BigInt = BigInt::parse_bytes(b"8", 10).unwrap();
+        let b9: BigInt = BigInt::parse_bytes(b"9", 10).unwrap();
+        let big_arr: Vec<BigInt> = vec![
+            b0.clone(),
+            b1.clone(),
+            b2.clone(),
+            b3.clone(),
+            b4.clone(),
+            b5.clone(),
+            b6.clone(),
+            b7.clone(),
+            b8.clone(),
+            b9.clone(),
+        ];
+
+        let poseidon = Poseidon::new();
+        let h = poseidon.hash(big_arr).unwrap();
+
+        let big_arr2: Vec<BigInt> = vec![
+            b5.clone(),
+            b6.clone(),
+            b7.clone(),
+            b8.clone(),
+            b9.clone(),
+            b0.clone(),
+            b1.clone(),
+            b2.clone(),
+            b3.clone(),
+            b4.clone(),
+        ];
+        let h2 = poseidon.hash(big_arr2).unwrap();
+        assert_ne!(h, h2);
+    }
+
+    #[test]
+    fn test_padding() {
+        let b0: BigInt = BigInt::parse_bytes(b"0", 10).unwrap();
+        let b1: BigInt = BigInt::parse_bytes(b"1", 10).unwrap();
+        let big_arr: Vec<BigInt> = vec![b1.clone()];
+
+        let poseidon = Poseidon::new();
+        let h = poseidon.hash(big_arr).unwrap();
+
+        let big_arr2: Vec<BigInt> = vec![b1.clone(), b0.clone()];
+        let h2 = poseidon.hash(big_arr2).unwrap();
+        assert_ne!(h, h2);
     }
 }
