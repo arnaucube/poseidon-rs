@@ -12,3 +12,9 @@ readme = "README.md"
 ff = {package="ff_ce" , version="0.11", features = ["derive"]}
 rand = "0.4"
 
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "bench_poseidon_hash"
+harness = false

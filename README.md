@@ -7,3 +7,8 @@ Compatible with the Poseidon Go implementation done in https://github.com/iden3/
 
 ## Warning
 Do not use in production
+
+## Benchmarks
+```
+hash           time:   [120.12 us 121.08 us 122.30 us]
+```
