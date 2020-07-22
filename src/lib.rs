@@ -164,32 +164,26 @@ impl Poseidon {
             constants: load_constants(),
         }
     }
-    pub fn ark(&self, state: &Vec<Fr>, c: &Fr) -> Vec<Fr> {
-        let mut new_state: Vec<Fr> = state.clone();
+    pub fn ark(&self, state: &mut Vec<Fr>, c: &Fr) {
         for i in 0..state.len() {
-            new_state[i] = state[i];
-            new_state[i].add_assign(c);
+            state[i].add_assign(c);
         }
-
-        new_state
     }
 
-    pub fn sbox(&self, state: &Vec<Fr>, i: usize) -> Vec<Fr> {
-        let mut new_state: Vec<Fr> = state.clone();
+    pub fn sbox(&self, state: &mut Vec<Fr>, i: usize) {
         if i < NROUNDSF / 2 || i >= NROUNDSF / 2 + NROUNDSP {
             for j in 0..T {
-                new_state[j] = state[j];
-                new_state[j].square();
-                new_state[j].square();
-                new_state[j].mul_assign(&state[j]);
+                let aux = state[j];
+                state[j].square();
+                state[j].square();
+                state[j].mul_assign(&aux);
             }
         } else {
-            new_state[0] = state[0];
-            new_state[0].square();
-            new_state[0].square();
-            new_state[0].mul_assign(&state[0]);
+            let aux = state[0];
+            state[0].square();
+            state[0].square();
+            state[0].mul_assign(&aux);
         }
-        new_state
     }
 
     pub fn mix(&self, state: &Vec<Fr>, m: &Vec<Vec<Fr>>) -> Vec<Fr> {
@@ -216,8 +210,8 @@ impl Poseidon {
         }
 
         for i in 0..(NROUNDSF + NROUNDSP) {
-            state = self.ark(&state, &self.constants.c[i]);
-            state = self.sbox(&state, i);
+            self.ark(&mut state, &self.constants.c[i]);
+            self.sbox(&mut state, i);
             state = self.mix(&state, &self.constants.m);
         }
 
@@ -236,13 +230,21 @@ mod tests {
             "0000000000000000000000000000000000000000000000000000000000000002",
             to_hex(&a)
         );
-        println!("`2` into hex = {}", to_hex(&a));
+
+        let b: Fr = Fr::from_str(
+            "21888242871839275222246405745257275088548364400416034343698204186575808495619",
+        )
+        .unwrap();
+        assert_eq!(
+            "0000000000000000000000000000000000000000000000000000000000000002",
+            to_hex(&b)
+        );
+        assert_eq!(&a, &b);
     }
 
     #[test]
     fn test_load_constants() {
         let constants = load_constants();
-        println!("{:?}", constants.c[0].to_string());
         assert_eq!(
             constants.c[0].to_string(),
             "Fr(0x1fd4a35e68f0946f8f5dfd2ac9d7882ce2466ec1c9766f69b5a14c3f84a17be2)"
