@@ -1,6 +1,6 @@
 [package]
 name = "poseidon-rs"
-version = "0.0.1"
+version = "0.0.3"
 authors = ["arnaucube <root@arnaucube.com>"]
 edition = "2018"
 license = "GPL-3.0"
@@ -9,8 +9,12 @@ repository = "https://github.com/arnaucube/poseidon-rs"
 readme = "README.md"
 
 [dependencies]
-num = "0.2.0"
-num-bigint = "0.2.2"
-num-traits = "0.2.8"
-blake2 = "0.8"
-rustc-hex = "1.0.0"
+ff = {package="ff_ce" , version="0.11", features = ["derive"]}
+rand = "0.4"
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "bench_poseidon_hash"
+harness = false

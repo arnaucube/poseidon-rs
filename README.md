@@ -7,3 +7,4 @@ Compatible with the Poseidon Go implementation done in https://github.com/iden3/
 
 ## Warning
 Do not use in production
+
