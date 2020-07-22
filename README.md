@@ -1,4 +1,5 @@
-# poseidon-rs [![Crates.io](https://img.shields.io/crates/v/poseidon-rs.svg)](https://crates.io/crates/poseidon-rs) [![Build Status](https://travis-ci.org/arnaucube/poseidon-rs.svg?branch=master)](https://travis-ci.org/arnaucube/poseidon-rs)
+# poseidon-rs [![Crates.io](https://img.shields.io/crates/v/poseidon-rs.svg)](https://crates.io/crates/poseidon-rs) [![Test](https://github.com/arnaucube/poseidon-rs/workflows/Test/badge.svg)](https://github.com/arnaucube/poseidon-rs/actions?query=workflow%3ATest)
+
 Poseidon hash implementation in Rust, a zkSNARK friendly hash function.
 
 https://eprint.iacr.org/2019/458.pdf
