@@ -85,7 +85,7 @@ impl Poseidon {
         for i in 0..state.len() {
             new_state.push(Fr::zero());
             for j in 0..state.len() {
-                let mut mij = m[j][i];
+                let mut mij = m[i][j];
                 mij.mul_assign(&state[j]);
                 new_state[i].add_assign(&mij);
             }
@@ -101,18 +101,13 @@ impl Poseidon {
         let n_rounds_f = self.constants.n_rounds_f.clone();
         let n_rounds_p = self.constants.n_rounds_p[t - 2].clone();
 
-        let mut state = inp.clone();
-        for _ in inp.len()..t {
-            state.push(Fr::zero());
-        }
-        // state[state.len() - 1] = Fr::zero();
+        let mut state = vec![Fr::zero(); t];
+        state[1..].clone_from_slice(&inp);
 
         for i in 0..(n_rounds_f + n_rounds_p) {
             self.ark(&mut state, &self.constants.c[t - 2], i * t);
             self.sbox(n_rounds_f, n_rounds_p, &mut state, i);
-            if i < n_rounds_f + n_rounds_p - 1 {
-                state = self.mix(&state, &self.constants.m[t - 2]);
-            }
+            state = self.mix(&state, &self.constants.m[t - 2]);
         }
 
         Ok(state[0])
@@ -179,7 +174,7 @@ mod tests {
         let h = poseidon.hash(big_arr.clone()).unwrap();
         assert_eq!(
             h.to_string(),
-            "Fr(0x186a5454a7c47c73dfc74ac32ea40a57d27eeb4e2bfc6551dd7b66686d3fd1ab)" // "11043376183861534927536506085090418075369306574649619885724436265926427398571"
+            "Fr(0x29176100eaa962bdc1fe6c654d6a3c130e96a4d1168b33848b897dc502820133)" // "18586133768512220936620570745912940619677854269274689475585506675881198879027"
         );
 
         let mut big_arr: Vec<Fr> = Vec::new();
@@ -189,7 +184,7 @@ mod tests {
         let h = poseidon.hash(big_arr.clone()).unwrap();
         assert_eq!(
             h.to_string(),
-            "Fr(0x25d86fb7c42fd70a7e800e871f22f2f03a282abb18f86c347a1078a92f713f60)" // "17117985411748610629288516079940078114952304104811071254131751175361957805920"
+            "Fr(0x115cc0f5e7d690413df64c6b9662e9cf2a3617f2743245519e19607a4417189a)" // "7853200120776062878684798364095072458815029376092732009249414926327459813530"
         );
 
         let mut big_arr: Vec<Fr> = Vec::new();
@@ -202,7 +197,7 @@ mod tests {
         let h = poseidon.hash(big_arr.clone()).unwrap();
         assert_eq!(
             h.to_string(),
-            "Fr(0x08ca0a9154fccd6426092b2404e1ceeb80a7849734f1d3fe7952c2075e489566)" // "3975478831357328722254985704342968745327876719981393787143845259590563829094"
+            "Fr(0x024058dd1e168f34bac462b6fffe58fd69982807e9884c1c6148182319cee427)" // "1018317224307729531995786483840663576608797660851238720571059489595066344487"
         );
 
         let mut big_arr: Vec<Fr> = Vec::new();
@@ -216,7 +211,7 @@ mod tests {
         let h = poseidon.hash(big_arr.clone()).unwrap();
         assert_eq!(
             h.to_string(),
-            "Fr(0x2bb6c270db4ca49d129e315cdad9e0e678c1692c420dbf4667fdabc0f158e4ae)" // "19772360636270345724087386688434825760738403416279047262510528378903625000110"
+            "Fr(0x21e82f465e00a15965e97a44fe3c30f3bf5279d8bf37d4e65765b6c2550f42a1)" // "15336558801450556532856248569924170992202208561737609669134139141992924267169"
         );
 
         let mut big_arr: Vec<Fr> = Vec::new();
@@ -229,7 +224,7 @@ mod tests {
         let h = poseidon.hash(big_arr.clone()).unwrap();
         assert_eq!(
             h.to_string(),
-            "Fr(0x07087ef123b0fc18a7487a9b3112aec23601e3d2b7ea27a85b35c7ecb595e6f6)" // "3181200837746671699652342497997860344148947482942465819251904554707352676086"
+            "Fr(0x0cd93f1bab9e8c9166ef00f2a1b0e1d66d6a4145e596abe0526247747cc71214)" // "5811595552068139067952687508729883632420015185677766880877743348592482390548"
         );
 
         let mut big_arr: Vec<Fr> = Vec::new();
@@ -242,7 +237,7 @@ mod tests {
         let h = poseidon.hash(big_arr.clone()).unwrap();
         assert_eq!(
             h.to_string(),
-            "Fr(0x128a815839bb66db834533b9c837e5a09df55e90aa9aba7ad46782234e083c20)" // "8386348873272147968934270337233829407378789978142456170950021426339096575008"
+            "Fr(0x1b1caddfc5ea47e09bb445a7447eb9694b8d1b75a97fff58e884398c6b22825a)" // "12263118664590987767234828103155242843640892839966517009184493198782366909018"
         );
 
         let mut big_arr: Vec<Fr> = Vec::new();
@@ -255,7 +250,7 @@ mod tests {
         let h = poseidon.hash(big_arr.clone()).unwrap();
         assert_eq!(
             h.to_string(),
-            "Fr(0x0b807dafd5ecc62acdf7ae48e3a1dfb14ccc1ce398f865ac85ff0b4afd90ea6c)" // "5202465217520500374834597824465244016759843635092906214933648999760272616044"
+            "Fr(0x2d1a03850084442813c8ebf094dea47538490a68b05f2239134a4cca2f6302e1)" // "20400040500897583745843009878988256314335038853985262692600694741116813247201"
         );
     }
 }

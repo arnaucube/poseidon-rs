@@ -1,6 +1,6 @@
 [package]
 name = "poseidon-rs"
-version = "0.0.7"
+version = "0.0.8"
 authors = ["arnaucube <root@arnaucube.com>"]
 edition = "2018"
 license = "GPL-3.0"
