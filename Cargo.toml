@@ -1,9 +1,9 @@
 [package]
 name = "poseidon-rs"
-version = "0.0.8"
+version = "0.0.9"
 authors = ["arnaucube <root@arnaucube.com>"]
 edition = "2018"
-license = "GPL-3.0"
+license = "Apache-2.0"
 description = "Poseidon hash implementation"
 repository = "https://github.com/arnaucube/poseidon-rs"
 readme = "README.md"
