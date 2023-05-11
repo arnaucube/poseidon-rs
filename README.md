@@ -9,6 +9,8 @@ Compatible with the Poseidon implementations:
 - Go: https://github.com/iden3/go-iden3-crypto
 - Js & circom: https://github.com/iden3/circomlib
 
+An arkworks-based version of this repo can be found at https://github.com/arnaucube/poseidon-ark
+
 ## Warning
 Do not use in production
 
